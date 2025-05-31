@@ -1,0 +1,6 @@
+Model,runtime_small,output_small,dist_small,runtime_medium,output_medium,dist_medium,runtime_large,output_large,dist_large
+Local_Search_Two_Opt,0.00,20,380.60,0.00,100,825.20,0.03,398,1576.00
+Greedy_Local_Search,0.00,19,390.80,0.00,99,917.20,0.04,396,1758.60
+DP_Greedy_Two_Opt,0.00,20,371.40,0.00,100,812.40,0.04,398,1566.40
+Greedy,0.00,19,390.80,0.00,99,917.20,0.04,396,1758.60
+DP_Greedy,0.00,20,411.20,0.00,100,917.40,0.00,398,1763.20

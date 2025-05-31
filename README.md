@@ -67,3 +67,30 @@ Khoảng cách di chuyển từ vị trí **i** đến vị trí **j** là **d(i
 ```
 #### **Giải thích**  
 Lộ trình của nhân viên kho là: ```0 → 2 → 3 → 1 → 5 → 0```
+
+# Evaluation Framework
+
+## Test Case Overview
+
+### 🔹 Small
+- `--size_N`: 5
+- `--size_M`: 10
+- `--max_quantity`: 10
+- `--num_visited`: 3
+- `--num_case`: Tùy chọn (do người dùng truyền vào)
+
+### 🔸 Medium
+- `--size_N`: 20
+- `--size_M`: 50
+- `--max_quantity`: 50
+- `--num_visited`: 10
+- `--num_case`: Tùy chọn (do người dùng truyền vào)
+
+### 🔺 Large
+- `--size_N`: 50
+- `--size_M`: 200
+- `--max_quantity`: 100
+- `--num_visited`: 25
+- `--num_case`: Tùy chọn (do người dùng truyền vào)
+
+## Evaluation Criteria
