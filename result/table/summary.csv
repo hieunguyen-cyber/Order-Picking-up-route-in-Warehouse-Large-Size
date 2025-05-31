@@ -1,6 +1,6 @@
-Model,runtime_small,output_small,dist_small,runtime_medium,output_medium,dist_medium,runtime_large,output_large,dist_large
-Local_Search_Two_Opt,0.00,20,380.60,0.00,100,825.20,0.03,398,1576.00
-Greedy_Local_Search,0.00,19,390.80,0.00,99,917.20,0.04,396,1758.60
-DP_Greedy_Two_Opt,0.00,20,371.40,0.00,100,812.40,0.04,398,1566.40
-Greedy,0.00,19,390.80,0.00,99,917.20,0.04,396,1758.60
-DP_Greedy,0.00,20,411.20,0.00,100,917.40,0.00,398,1763.20
+Model,Runtime (small),Shelves (small),Distance (small),Runtime (medium),Shelves (medium),Distance (medium),Runtime (large),Shelves (large),Distance (large)
+Local_Search_Two_Opt,0.000072,20,380.600000,0.001416,100,825.200000,0.031232,398,1576.000000
+Greedy_Local_Search,0.000112,19,390.800000,0.002496,99,917.200000,0.037398,396,1758.600000
+DP_Greedy_Two_Opt,0.000083,20,371.400000,0.001520,100,812.400000,0.038953,398,1566.400000
+Greedy,0.000111,19,390.800000,0.002506,99,917.200000,0.037503,396,1758.600000
+DP_Greedy,0.000030,20,411.200000,0.000392,100,917.400000,0.004730,398,1763.200000

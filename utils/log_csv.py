@@ -6,7 +6,11 @@ import dataframe_image as dfi
 
 def generate_summary(models, base_dir="test", output_csv="result/table/summary.csv", output_png="result/table/summary.png"):
     SIZES = ["small", "medium", "large"]
-    METRICS = ["runtime", "output", "dist"]
+    METRICS = {
+        "runtime": "Runtime",
+        "output": "Shelves",
+        "dist": "Distance"
+    }
 
     if isinstance(models, str):
         models = models.split(",")
@@ -45,11 +49,11 @@ def generate_summary(models, base_dir="test", output_csv="result/table/summary.c
     for model in models:
         row = {"Model": model}
         for size in SIZES:
-            for metric in METRICS:
+            for metric, nice_name in METRICS.items():
                 val = aggregate_metric(model, size, metric)
-                col_name = f"{metric}_{size}"
+                col_name = f"{nice_name} ({size})"
                 if metric in ["runtime", "dist"]:
-                    row[col_name] = f"{val:.2f}"
+                    row[col_name] = f"{val:.6f}"
                 else:
                     row[col_name] = f"{int(round(val))}"
         rows.append(row)
@@ -58,28 +62,21 @@ def generate_summary(models, base_dir="test", output_csv="result/table/summary.c
     df.to_csv(output_csv, index=False)
     print(f"✅ CSV saved to {output_csv}")
 
-    # Format lại DataFrame cho đẹp hơn
+    # Tạo bảng đẹp
     df_styled = (
         df.style
-        .set_caption("So sánh các mô hình theo Runtime, Output và Distance")
-        .set_table_styles(
-            [{
-                'selector': 'caption',
-                'props': [('font-size', '16px'), ('font-weight', 'bold')]
-            },
-            {
-                'selector': 'th',
-                'props': [('background-color', '#dbefff'), ('color', 'black'), ('font-weight', 'bold')]
-            }]
-        )
+        .set_caption("So sánh các mô hình: Thời gian chạy, Số kệ, Tổng khoảng cách")
+        .set_table_styles([
+            {'selector': 'caption', 'props': [('font-size', '16px'), ('font-weight', 'bold')]},
+            {'selector': 'th', 'props': [('background-color', '#e6f2ff'), ('color', 'black'), ('font-weight', 'bold')]}
+        ])
         .set_properties(**{
             'border': '1px solid black',
             'padding': '6px',
-            'font-size': '12px'
+            'font-size': '12px',
         })
     )
 
-    # Lưu bảng dưới dạng PNG đẹp như LaTeX
     dfi.export(df_styled, output_png)
     print(f"✅ Pretty LaTeX-style table saved to {output_png}")
 
