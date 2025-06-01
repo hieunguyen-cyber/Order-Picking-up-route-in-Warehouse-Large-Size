@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NUM_CASE=5
+NUM_CASE=10
 OUT_DIR="test"
 
 while [[ "$#" -gt 0 ]]; do

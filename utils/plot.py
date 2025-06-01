@@ -30,20 +30,23 @@ def read_runtime_data(runtime_path):
 # Hàm vẽ biểu đồ runtime và lưu thành PNG
 def plot_runtime(runtime_path, output_file='result/figure/runtime_comparison.png'):
     data = read_runtime_data(runtime_path)
-    
+
+    # Trích tên mô hình từ path: vd: test/Greedy/runtime => Greedy
+    model_name = os.path.basename(os.path.dirname(runtime_path.rstrip('/')))
+
     fig = go.Figure()
     x = []
     y = []
     colors = []
     sizes = ['small', 'medium', 'large']
     color_map = {'small': 'green', 'medium': 'gold', 'large': 'red'}
-    
+
     for size in sizes:
         values = data.get(size, [])
-        x.extend([f"{i}" for i in range(len(values))])
+        x.extend([str(i) for i in range(len(values))])
         y.extend(values)
         colors.extend([color_map[size]] * len(values))
-    
+
     for size in sizes:
         mask = [c == color_map[size] for c in colors]
         x_size = [x[i] for i in range(len(x)) if mask[i]]
@@ -56,36 +59,16 @@ def plot_runtime(runtime_path, output_file='result/figure/runtime_comparison.png
             line=dict(color=color_map[size]),
             marker=dict(size=8)
         ))
-    
+
     fig.update_layout(
-        title='So sánh thời gian chạy',
+        title=f"So sánh thời gian chạy - {model_name}",
         xaxis_title='Test case',
         yaxis_title='Runtime (s)',
         showlegend=True
     )
-    
-    fig.write_image(output_file, format='png')  # Lưu biểu đồ dưới dạng PNG
-    print(f"Biểu đồ runtime đã được lưu tại {output_file}")
 
-# Hàm đọc dữ liệu số kệ từ file txt
-def read_shelf_data(base_path, subdirs=['small', 'medium', 'large']):
-    data = {subdir: [] for subdir in subdirs}
-    for subdir in subdirs:
-        path = os.path.join(base_path, subdir)
-        if not os.path.exists(path):
-            print(f"Thư mục {path} không tồn tại.")
-            continue
-        for file in os.listdir(path):
-            if file.endswith('.txt'):
-                with open(os.path.join(path, file), 'r') as f:
-                    lines = f.readlines()
-                    if lines:
-                        try:
-                            shelf_count = float(lines[0].strip())  # Giả định line[0] chứa số kệ
-                            data[subdir].append(shelf_count)
-                        except ValueError:
-                            print(f"Lỗi định dạng ở file {file}")
-    return data
+    fig.write_image(output_file, format='png')
+    print(f"✅ Biểu đồ runtime đã được lưu tại {output_file}")
 
 def read_shelf_data(folder_path):
     sizes = ['small', 'medium', 'large']
@@ -103,13 +86,12 @@ def read_shelf_data(folder_path):
         result[size] = values
     return result
 
-# Hàm vẽ biểu đồ số kệ (sửa lại)
 def plot_shelves(eval_path, output_path, output_file='result/figure/shelf_comparison.png'):
-    import plotly.express as px
-    import pandas as pd
-
     eval_data = read_shelf_data(eval_path)
     output_data = read_shelf_data(output_path)
+
+    # Trích tên mô hình từ đường dẫn output_path
+    model_name = os.path.basename(os.path.dirname(output_path.rstrip('/')))
 
     sizes = ['small', 'medium', 'large']
     records = []
@@ -127,7 +109,7 @@ def plot_shelves(eval_path, output_path, output_file='result/figure/shelf_compar
             records.append({
                 "Size": size,
                 "Case": f"{size}_{i+1}",
-                "Source": "Output",
+                "Source": model_name,
                 "Shelves": output_values[i] if i < len(output_values) else None
             })
 
@@ -139,8 +121,8 @@ def plot_shelves(eval_path, output_path, output_file='result/figure/shelf_compar
         y="Shelves",
         color="Source",
         barmode="group",
-        title="So sánh số kệ được chọn giữa Eval và Output",
-        color_discrete_map={"Eval": "black", "Output": "royalblue"},
+        title=f"So sánh số kệ giữa Eval và {model_name}",
+        color_discrete_map={"Eval": "black", model_name: "royalblue"},
     )
 
     fig.update_layout(
@@ -174,9 +156,11 @@ def read_distance_data(data_path):
                             print(f"Lỗi định dạng ở file {file}")
     return data
 
-# Hàm vẽ biểu đồ tổng khoảng cách (bar chart nhóm)
 def plot_distances(data_path, output_file='result/figure/distance_comparison.png'):
     data = read_distance_data(data_path)
+
+    # Trích tên mô hình từ đường dẫn
+    model_name = os.path.basename(os.path.dirname(data_path.rstrip('/')))
 
     sizes = ['small', 'medium', 'large']
     records = []
@@ -194,7 +178,7 @@ def plot_distances(data_path, output_file='result/figure/distance_comparison.png
             records.append({
                 "Size": size,
                 "Case": f"{size}_{i+1}",
-                "Source": "Output",
+                "Source": model_name,
                 "Distance": model_values[i] if i < len(model_values) else None
             })
 
@@ -206,8 +190,8 @@ def plot_distances(data_path, output_file='result/figure/distance_comparison.png
         y="Distance",
         color="Source",
         barmode="group",
-        title="So sánh tổng khoảng cách giữa Eval và Output",
-        color_discrete_map={"Eval": "black", "Output": "crimson"},
+        title=f"So sánh tổng khoảng cách giữa Eval và {model_name}",
+        color_discrete_map={"Eval": "black", model_name: "crimson"},
     )
 
     fig.update_layout(
