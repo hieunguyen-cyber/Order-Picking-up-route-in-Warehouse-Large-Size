@@ -14,7 +14,7 @@ def solve_exact_dp(N, M, Q, dist, q_req):
         for p in range(N):
             sumQ[mask][p] = sumQ[prev][p] + Q[p][j+1]
         if all(sumQ[mask][p] >= q_req[p] for p in range(N)):
-            valid[mask] = True
+            valid[mask] = True 
 
     INF = 10**18
     dp = [[INF]*M for _ in range(max_mask)]
