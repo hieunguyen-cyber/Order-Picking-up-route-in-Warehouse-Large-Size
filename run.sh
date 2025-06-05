@@ -42,14 +42,6 @@ if [ "$stage" -le 6 ] && [ "$stop_stage" -ge 6 ]; then
 fi
 
 if [ "$stage" -le 7 ] && [ "$stop_stage" -ge 7 ]; then
-    bash scripts/ACO.sh --stage 1 --stop_stage 2
-fi
-
-if [ "$stage" -le 8 ] && [ "$stop_stage" -ge 8 ]; then
-    bash scripts/CP.sh --stage 1 --stop_stage 2
-fi
-
-if [ "$stage" -le 9 ] && [ "$stop_stage" -ge 9 ]; then
     python utils/plot.py plot_metrics --models="$MODELS"
     python utils/log_csv.py --models="$MODELS"
 fi

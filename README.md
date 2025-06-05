@@ -99,9 +99,7 @@ bash run.sh --stage 2 --stop_stage 4
 |4	    |Run DP_Greedy_Two_Opt   |
 |5	    |Run Greedy_Local_Search |
 |6	    |Run Local_Search_Two_Opt|
-|7	    |Run ACO (if implemented)|
-|8	    |Run CP  (if implemented)|
-|9	    |Plot metrics and log CSV|
+|7	    |Plot metrics and log CSV|
 
 ⚠️ Skip stage 1 if you already have /test/input data.
 
