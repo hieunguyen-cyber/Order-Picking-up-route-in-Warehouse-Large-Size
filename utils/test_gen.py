@@ -1,10 +1,9 @@
 import random
 import math
 import json
-from typing import List, Tuple
+from typing import Tuple
 import numpy as np
 import fire
-from ortools.linear_solver import pywraplp
 
 
 def euclidean(p1: Tuple[float, float], p2: Tuple[float, float]) -> int:
