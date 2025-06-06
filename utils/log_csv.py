@@ -80,5 +80,91 @@ def generate_summary(models, base_dir="test", output_csv="result/table/summary.c
     dfi.export(df_styled, output_png)
     print(f"✅ Pretty LaTeX-style table saved to {output_png}")
 
+def generate_meta_summary(models, base_dir="test/meta", output_csv="result/table/meta_summary.csv", output_png="result/table/meta_summary.png"):
+    SIZES = ["small", "medium", "large"]
+    METRICS = {
+        "runtime": "Runtime",
+        "output": "Shelves",
+        "dist": "Distance"
+    }
+    METAS = ["GA", "ACO", "SA"]
+
+    if isinstance(models, str):
+        models = models.split(",")
+
+    os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+    os.makedirs(os.path.dirname(output_png), exist_ok=True)
+
+    def read_runtime(path):
+        with open(path, "r") as f:
+            return float(f.readline().split()[0])
+
+    def read_output(path):
+        with open(path, "r") as f:
+            return int(f.readline().strip())
+
+    def read_dist(path):
+        with open(path, "r") as f:
+            return int(f.readline().strip().split()[1])
+
+    def aggregate_metric(meta, size, metric):
+        values = []
+        for model in models:
+            dir_path = os.path.join(base_dir, model, meta, metric, size)
+            if not os.path.exists(dir_path):
+                continue
+            for filename in sorted(os.listdir(dir_path), key=lambda x: int(os.path.splitext(x)[0])):
+                file_path = os.path.join(dir_path, filename)
+                try:
+                    if metric == "runtime":
+                        val = read_runtime(file_path)
+                    elif metric == "output":
+                        val = read_output(file_path)
+                    elif metric == "dist":
+                        val = read_dist(file_path)
+                    values.append(val)
+                except:
+                    continue
+        return np.mean(values) if values else np.nan
+
+    rows = []
+    for meta in METAS:
+        row = {"Metaheuristic": meta}
+        for size in SIZES:
+            for metric, nice_name in METRICS.items():
+                val = aggregate_metric(meta, size, metric)
+                col_name = f"{nice_name} ({size})"
+                if np.isnan(val):
+                    row[col_name] = "-"
+                elif metric in ["runtime", "dist"]:
+                    row[col_name] = f"{val:.6f}"
+                else:
+                    row[col_name] = f"{int(round(val))}"
+        rows.append(row)
+
+    df = pd.DataFrame(rows)
+    df.to_csv(output_csv, index=False)
+    print(f"✅ Meta CSV saved to {output_csv}")
+
+    df_styled = (
+        df.style
+        .set_caption("So sánh 3 Metaheuristics: Thời gian chạy, Số kệ, Tổng khoảng cách")
+        .set_table_styles([
+            {'selector': 'caption', 'props': [('font-size', '16px'), ('font-weight', 'bold')]},
+            {'selector': 'th', 'props': [('background-color', '#fbeed6'), ('color', 'black'), ('font-weight', 'bold')]}
+        ])
+        .set_properties(**{
+            'border': '1px solid black',
+            'padding': '6px',
+            'font-size': '12px',
+        })
+    )
+
+    dfi.export(df_styled, output_png)
+    print(f"✅ Pretty Meta table saved to {output_png}")
+
 if __name__ == "__main__":
-    fire.Fire(generate_summary)
+    fire.Fire({
+        "generate_summary": generate_summary,
+        "generate_meta_summary": generate_meta_summary,
+    })

@@ -4,6 +4,7 @@ import plotly.express as px
 import pandas as pd
 import fire
 import numpy as np
+import dataframe_image as dfi
 
 # Hàm đọc dữ liệu runtime từ file txt
 def read_runtime_data(runtime_path):
@@ -211,8 +212,6 @@ def analyze_and_plot(models, base_dir="test", output_dir="result/figure"):
     if isinstance(models, str):
         models = models.split(",")
 
-    os.makedirs(output_dir, exist_ok=True)
-
     def read_runtime(path):
         with open(path, "r") as f:
             return float(f.readline().split()[0])
@@ -267,17 +266,196 @@ def analyze_and_plot(models, base_dir="test", output_dir="result/figure"):
     plot_comparison("output", "So sánh số lượng kệ", "Tổng số kệ", "output_comparison")
     plot_comparison("dist", "So sánh tổng khoảng cách", "Tổng khoảng cách", "dist_comparison")
     print(f"✅ Figures (PNG) saved to: {output_dir}")
+def compare_meta_vs_base(model, base_dir="test", output_dir="result/figure"):
+    SIZES = ["small", "medium", "large"]
+    METAS = ["GA", "ACO", "SA"]
+    METRICS = ["runtime", "output", "dist"]
+    LABELS = ["Base", "GA", "ACO", "SA"]
+    COLORS = ["#636EFA", "#EF553B", "#00CC96", "#AB63FA"]
 
+    def read_runtime(path):
+        with open(path, "r") as f:
+            return float(f.readline().split()[0])
 
+    def read_output(path):
+        with open(path, "r") as f:
+            return int(f.readline().strip())
+
+    def read_dist(path):
+        with open(path, "r") as f:
+            return int(f.readline().strip().split()[1])
+
+    def collect_values(metric, size):
+        if metric == "runtime":
+            base_path = os.path.join(base_dir, model, "runtime", size)
+            meta_paths = [os.path.join(base_dir, "meta", model, m, "runtime", size) for m in METAS]
+            reader = read_runtime
+        elif metric == "output":
+            base_path = os.path.join(base_dir, model, "output", size)
+            meta_paths = [os.path.join(base_dir, "meta", model, m, "output", size) for m in METAS]
+            reader = read_output
+        elif metric == "dist":
+            base_path = os.path.join(base_dir, model, "dist", size)
+            meta_paths = [os.path.join(base_dir, "meta", model, m, "dist", size) for m in METAS]
+            reader = read_dist
+        else:
+            return []
+
+        def average_from_dir(folder):
+            vals = []
+            if not os.path.exists(folder):
+                return 0
+            for fname in os.listdir(folder):
+                fpath = os.path.join(folder, fname)
+                try:
+                    vals.append(reader(fpath))
+                except:
+                    continue
+            return np.mean(vals) if vals else 0
+
+        return [average_from_dir(p) for p in [base_path] + meta_paths]
+
+    for metric in METRICS:
+        fig = go.Figure()
+        for i, label in enumerate(LABELS):
+            y_values = [collect_values(metric, size)[i] for size in SIZES]
+            fig.add_trace(go.Bar(
+                name=label,
+                x=SIZES,
+                y=y_values,
+                marker_color=COLORS[i % len(COLORS)],
+                offsetgroup=i,
+            ))
+
+        fig.update_layout(
+            title=f"So sánh {metric.upper()} giữa base và metaheuristics - {model}",
+            xaxis_title="Kích thước dữ liệu",
+            yaxis_title=metric.capitalize(),
+            barmode="group",
+            template="plotly_white",
+            legend_title="Mô hình"
+        )
+
+        out_path = os.path.join(output_dir, f"{model}_meta_{metric}.png")
+        os.makedirs(os.path.dirname(out_path), exist_ok=True)
+        fig.write_image(out_path)
+        print(f"✅ Đã lưu biểu đồ {metric} meta tại: {out_path}")
+
+def compare_meta_across_models(models, base_dir="test/meta", output_dir="result/figure"):
+    SIZES = ["small", "medium", "large"]
+    METAS = ["GA", "ACO", "SA"]
+    METRICS = ["runtime", "output", "dist"]
+    COLORS = ["#EF553B", "#00CC96", "#AB63FA"]
+
+    if isinstance(models, str):
+        models = [m.strip() for m in models.replace(",", " ").split() if m.strip()]
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    def read_runtime(path):
+        with open(path, "r") as f:
+            return float(f.readline().split()[0])
+
+    def read_output(path):
+        with open(path, "r") as f:
+            return int(f.readline().strip())
+
+    def read_dist(path):
+        with open(path, "r") as f:
+            return int(f.readline().strip().split()[1])
+
+    for metric in METRICS:
+        meta_means = {meta: [] for meta in METAS}
+        base_means = []
+
+        for model in models:
+            # Calculate base mean for this model
+            vals_base = []
+            for size in SIZES:
+                if metric == "runtime":
+                    path = os.path.join("test", model, "runtime", size)
+                    reader = read_runtime
+                elif metric == "output":
+                    path = os.path.join("test", model, "output", size)
+                    reader = read_output
+                elif metric == "dist":
+                    path = os.path.join("test", model, "dist", size)
+                    reader = read_dist
+                else:
+                    continue
+
+                if not os.path.exists(path):
+                    continue
+                for fname in os.listdir(path):
+                    fpath = os.path.join(path, fname)
+                    try:
+                        vals_base.append(reader(fpath))
+                    except:
+                        continue
+            base_means.append(np.mean(vals_base) if vals_base else 0)
+
+            # Calculate meta means for this model
+            for meta in METAS:
+                vals = []
+                for size in SIZES:
+                    dir_path = os.path.join(base_dir, model, meta, metric, size)
+                    if not os.path.exists(dir_path):
+                        continue
+                    for fname in os.listdir(dir_path):
+                        fpath = os.path.join(dir_path, fname)
+                        try:
+                            if metric == "runtime":
+                                vals.append(read_runtime(fpath))
+                            elif metric == "output":
+                                vals.append(read_output(fpath))
+                            elif metric == "dist":
+                                vals.append(read_dist(fpath))
+                        except:
+                            continue
+                if vals:
+                    mean_val = np.mean(vals)
+                    meta_means[meta].append(mean_val)
+                else:
+                    meta_means[meta].append(0)
+
+        fig = go.Figure()
+        # Add base bar
+        fig.add_trace(go.Bar(
+            name="Base",
+            x=models,
+            y=base_means,
+            marker_color="#636EFA",
+        ))
+        # Add meta bars
+        for i, meta in enumerate(METAS):
+            fig.add_trace(go.Bar(
+                name=meta,
+                x=models,
+                y=meta_means[meta],
+                marker_color=COLORS[i],
+            ))
+
+        fig.update_layout(
+            title=f"So sánh {metric.upper()} giữa các metaheuristics và thuật toán gốc trên nhiều mô hình",
+            xaxis_title="Mô hình",
+            yaxis_title=metric.capitalize(),
+            barmode="group",
+            template="plotly_white",
+            legend_title="Thuật toán"
+        )
+
+        fig.write_image(os.path.join(output_dir, f"meta_compare_with_base_{metric}.png"))
+        print(f"📊 Đã lưu biểu đồ meta + base theo {metric}")
 # Giao diện dòng lệnh với fire
 def main():
     fire.Fire({
         "plot_runtime": plot_runtime,
         "plot_shelves": plot_shelves,
         "plot_distances": plot_distances,
-        "plot_metrics": analyze_and_plot
+        "plot_metrics": analyze_and_plot,
+        "compare_meta_vs_base": compare_meta_vs_base,
+        "compare_meta_across_models": compare_meta_across_models
     })
 
 if __name__ == '__main__':
     main()
-    

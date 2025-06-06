@@ -1,21 +1,25 @@
 #!/bin/bash
 
-# Danh sách model hợp lệ
 MODEL=("Local_Search_Two_Opt" "Greedy_Local_Search" "DP_Greedy_Two_Opt" "Greedy" "DP_Greedy")
+model=""
+meta="none"
 
-# Hàm kiểm tra model có trong danh sách không
+# Hàm kiểm tra model có hợp lệ không
 function contains() {
   local e
   for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
   return 1
 }
 
-# Lấy tham số --model
-model=""
+# Đọc tham số dòng lệnh
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
     --model)
       model="$2"
+      shift 2
+      ;;
+    --meta)
+      meta="$2"
       shift 2
       ;;
     *)
@@ -32,29 +36,33 @@ if ! contains "$model" "${MODEL[@]}"; then
   exit 1
 fi
 
-# Bắt đầu xử lý
 echo "📏 Evaluating model: $model"
+[[ "$meta" != "none" ]] && echo "✨ Using metaheuristic refinement: $meta"
 
 for SIZE in small medium large; do
   echo "🔍 Processing $SIZE ..."
 
-  # Tạo thư mục nếu chưa có
-  DIST_DIR="test/${model}/dist/${SIZE}"
+  if [[ "$meta" == "none" ]]; then
+    OUTPUT_PATH_ROOT="test/${model}/output/${SIZE}"
+    DIST_DIR="test/${model}/dist/${SIZE}"
+  else
+    OUTPUT_PATH_ROOT="test/meta/${model}/${meta}/output/${SIZE}"
+    DIST_DIR="test/meta/${model}/${meta}/dist/${SIZE}"
+  fi
+
   mkdir -p "$DIST_DIR"
 
   for input_file in test/input/$SIZE/*.txt; do
     filename=$(basename "$input_file")
     input_path="test/input/$SIZE/$filename"
     eval_path="test/eval/$SIZE/$filename"
-    output_path="test/${model}/output/$SIZE/$filename"
+    output_path="${OUTPUT_PATH_ROOT}/$filename"
 
-    # Tính distance
     eval_dist=$(python3 utils/calc_total_distance.py "$input_path" "$eval_path")
     output_dist=$(python3 utils/calc_total_distance.py "$input_path" "$output_path")
 
-    # Ghi vào file riêng theo tên case
     echo "$eval_dist $output_dist" > "$DIST_DIR/$filename"
   done
 done
 
-echo "✅ Evaluation distances saved to test/${model}/dist/{small,medium,large}/"
+echo "✅ Evaluation distances saved to: $DIST_DIR/"

@@ -1,0 +1,1 @@
+22.638165 seconds (metaheuristic: GA)

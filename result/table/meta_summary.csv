@@ -1,0 +1,4 @@
+Metaheuristic,Runtime (small),Shelves (small),Distance (small),Runtime (medium),Shelves (medium),Distance (medium),Runtime (large),Shelves (large),Distance (large)
+GA,0.179476,19,356.460000,1.321676,98,827.400000,16.513697,398,1710.260000
+ACO,0.299453,19,338.060000,7.640924,98,790.400000,102.621730,398,1713.140000
+SA,0.010855,19,356.440000,0.028520,98,828.040000,0.120302,398,1710.260000

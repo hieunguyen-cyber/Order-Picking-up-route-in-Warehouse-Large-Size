@@ -1,0 +1,1 @@
+0.014229 seconds (metaheuristic: SA)

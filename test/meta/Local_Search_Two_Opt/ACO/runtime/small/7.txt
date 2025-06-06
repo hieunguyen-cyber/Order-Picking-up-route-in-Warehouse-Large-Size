@@ -1,0 +1,1 @@
+0.103520 seconds (metaheuristic: ACO)
