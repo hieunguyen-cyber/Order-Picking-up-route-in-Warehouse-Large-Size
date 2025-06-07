@@ -8,7 +8,7 @@ def calculate_total_distance(route, distance_matrix):
     return sum(distance_matrix[route[i]][route[i + 1]] for i in range(len(route) - 1))
 
 
-def ant_colony_optimization(route, distance_matrix, n_ants=30, n_iterations=100, alpha=1.0, beta=5.0, evaporation=0.5, Q=100, elitist_weight=2.0):
+def ant_colony_optimization(route, distance_matrix, n_ants=10, n_iterations=50, alpha=1.0, beta=3.0, evaporation=0.5, Q=50, elitist_weight=1.5):
     depot = route[0]
     path = route[1:-1]  # exclude depot
     n = len(path)
