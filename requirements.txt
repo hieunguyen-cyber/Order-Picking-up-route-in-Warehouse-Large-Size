@@ -2,3 +2,6 @@ fire
 ortools
 kaleido
 dataframe-image 
+numpy
+pandas
+plotly
